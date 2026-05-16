@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAG Simulator — Retrieval Augmented Generation</title>
+  <style>
+    :root {
+      --bg: #070b18;
+      --panel: rgba(255,255,255,0.075);
+      --panel-strong: rgba(255,255,255,0.12);
+      --text: #edf3ff;
+      --muted: #aab7d4;
+      --accent: #73fbd3;
+      --accent-2: #8ea7ff;
+      --warning: #ffd166;
+      --danger: #ff6b8a;
+      --good: #5ef38c;
+      --line: rgba(255,255,255,0.16);
+      --shadow: 0 24px 80px rgba(0,0,0,0.45);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(115,251,211,0.22), transparent 34%),
+        radial-gradient(circle at 85% 0%, rgba(142,167,255,0.28), transparent 32%),
+        radial-gradient(circle at 50% 100%, rgba(255,107,138,0.12), transparent 35%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.08;
+      background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 90%);
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 36px 0 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .hero, .card {
+      border: 1px solid var(--line);
+      background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.045));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero {
+      padding: 34px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -100px;
+      top: -100px;
+      width: 260px;
+      height: 260px;
+      border-radius: 999px;
+      background: rgba(115,251,211,0.12);
+      filter: blur(8px);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(115,251,211,0.12);
+      color: var(--accent);
+      border: 1px solid rgba(115,251,211,0.26);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(38px, 6vw, 76px);
+      line-height: 0.92;
+      letter-spacing: -0.07em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .definition {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .definition h2, .section-title h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.03em;
+    }
+
+    .definition .formula {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.24);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      font-weight: 800;
+      line-height: 1.5;
+    }
+
+    .highlight { color: var(--accent); }
+    .purple { color: var(--accent-2); }
+    .yellow { color: var(--warning); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 370px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      padding: 18px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .step-btn {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      text-align: left;
+      border-radius: 18px;
+      padding: 15px;
+      cursor: pointer;
+      transition: 180ms ease;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .step-btn:hover, .step-btn.active {
+      transform: translateY(-2px);
+      background: rgba(115,251,211,0.12);
+      border-color: rgba(115,251,211,0.45);
+    }
+
+    .number {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: rgba(142,167,255,0.18);
+      color: #dce5ff;
+      font-weight: 900;
+    }
+
+    .step-btn.active .number {
+      background: var(--accent);
+      color: #04110e;
+    }
+
+    .step-btn strong { display: block; font-size: 15px; margin-bottom: 3px; }
+    .step-btn span { color: var(--muted); font-size: 13px; line-height: 1.35; }
+
+    .main {
+      display: grid;
+      gap: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .simulator {
+      padding: 24px;
+    }
+
+    .query-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.26);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 15px 16px;
+      outline: none;
+      font: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: rgba(115,251,211,0.65);
+      box-shadow: 0 0 0 4px rgba(115,251,211,0.12);
+    }
+
+    button.primary {
+      border: 0;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #07101e;
+      font-weight: 900;
+      border-radius: 16px;
+      padding: 0 20px;
+      cursor: pointer;
+      transition: 180ms ease;
+      white-space: nowrap;
+    }
+
+    button.primary:hover { transform: translateY(-2px); filter: brightness(1.05); }
+
+    .pipeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .pipe-card {
+      min-height: 126px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.055);
+      border-radius: 18px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: 220ms ease;
+    }
+
+    .pipe-card.running {
+      border-color: rgba(115,251,211,0.65);
+      background: rgba(115,251,211,0.1);
+      transform: translateY(-4px);
+    }
+
+    .pipe-card.done::before {
+      content: "✓";
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      color: var(--good);
+      font-weight: 900;
+    }
+
+    .pipe-card small {
+      color: var(--muted);
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .pipe-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .pipe-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .output {
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.22);
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 220px;
+    }
+
+    .output h3 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .output .content {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+    }
+
+    .pill {
+      display: inline-flex;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(142,167,255,0.15);
+      color: #cfd9ff;
+      border: 1px solid rgba(142,167,255,0.25);
+      margin: 4px 4px 4px 0;
+    }
+
+    .doc {
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.045);
+      margin-bottom: 10px;
+    }
+
+    .doc strong { color: var(--text); }
+    .doc p { margin: 6px 0 0; }
+
+    .step-detail {
+      padding: 26px;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 18px;
+    }
+
+    .detail-card {
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.2);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .detail-card h3 { margin: 0 0 10px; }
+    .detail-card p, .detail-card li { color: var(--muted); line-height: 1.65; }
+    .detail-card ul { margin: 12px 0 0; padding-left: 18px; }
+
+    .knowledge-base {
+      padding: 24px;
+    }
+
+    .kb-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .mini-doc {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      padding: 15px;
+      min-height: 155px;
+    }
+
+    .mini-doc h4 { margin: 0 0 8px; }
+    .mini-doc p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 14px; }
+
+    .footer-note {
+      margin-top: 24px;
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(115,251,211,0.09);
+      border: 1px solid rgba(115,251,211,0.2);
+      color: #dffdf5;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 980px) {
+      header, .layout, .detail-grid, .output-grid { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .pipeline { grid-template-columns: 1fr; }
+      .kb-grid { grid-template-columns: 1fr; }
+      .query-box { grid-template-columns: 1fr; }
+      button.primary { min-height: 52px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <main class="app">
+    <header>
+      <section class="hero">
+        <div class="tag">RAG Learning Simulator</div>
+        <h1>Understand RAG by watching it work.</h1>
+        <p>
+          RAG means <span class="highlight">Retrieval Augmented Generation</span>. Instead of asking an AI model to answer from memory only, we first retrieve useful information from a knowledge base, add it to the prompt, then let the model generate a better grounded answer.
+        </p>
+      </section>
+
+      <aside class="definition card">
+        <div>
+          <h2>The simple idea</h2>
+          <div class="formula">
+            User Question<br />
+            + <span class="highlight">Relevant Knowledge</span><br />
+            + AI Model<br />
+            = <span class="purple">Better Answer</span>
+          </div>
+        </div>
+        <p style="color: var(--muted); line-height: 1.6; margin: 0;">
+          Your definition was close: a knowledge base is used to fetch the right information and enrich the prompt so the response is more accurate.
+        </p>
+      </aside>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar card">
+        <h2 style="margin: 0;">RAG Steps</h2>
+        <p style="color: var(--muted); line-height: 1.6;">Click a step to understand what happens inside the pipeline.</p>
+        <div class="steps" id="steps"></div>
+      </aside>
+
+      <section class="main">
+        <section class="simulator card">
+          <div class="section-title">
+            <div>
+              <h2>Interactive Simulation</h2>
+              <p>Ask a question. The simulator retrieves matching documents, builds context, and generates a grounded answer.</p>
+            </div>
+          </div>
+
+          <div class="query-box">
+            <input id="question" value="What is RAG and why is it useful?" placeholder="Ask a question about RAG..." />
+            <button class="primary" onclick="runRag()">Run RAG</button>
+          </div>
+
+          <div class="pipeline" id="pipeline">
+            <div class="pipe-card" data-stage="0"><small>Step 1</small><strong>User Question</strong><p>The user asks something.</p></div>
+            <div class="pipe-card" data-stage="1"><small>Step 2</small><strong>Search / Retrieval</strong><p>Find useful chunks from the knowledge base.</p></div>
+            <div class="pipe-card" data-stage="2"><small>Step 3</small><strong>Context Building</strong><p>Add retrieved facts to the prompt.</p></div>
+            <div class="pipe-card" data-stage="3"><small>Step 4</small><strong>Generation</strong><p>The model writes an answer using the context.</p></div>
+            <div class="pipe-card" data-stage="4"><small>Step 5</small><strong>Grounded Answer</strong><p>Final answer with less hallucination.</p></div>
+          </div>
+
+          <div class="output-grid">
+            <div class="output">
+              <h3>📚 Retrieved Knowledge</h3>
+              <div class="content" id="retrieved">Run the simulation to see which knowledge chunks are selected.</div>
+            </div>
+            <div class="output">
+              <h3>🤖 Generated Answer</h3>
+              <div class="content" id="answer">The generated answer will appear here.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="step-detail card" id="detail"></section>
+
+        <section class="knowledge-base card">
+          <div class="section-title">
+            <div>
+              <h2>Mini Knowledge Base</h2>
+              <p>These are the documents the simulator can retrieve from.</p>
+            </div>
+          </div>
+          <div class="kb-grid" id="kb"></div>
+        </section>
+      </section>
+    </div>
+
+    <div class="footer-note">
+      <strong>Coach note:</strong> The key skill is not only knowing that RAG uses a knowledge base. The real value is understanding the full chain: chunk documents, search the right chunks, inject them into the prompt, generate an answer, then verify whether the answer is supported by the retrieved context.
+    </div>
+  </main>
+
+  <script>
+    const ragSteps = [
+      {
+        title: "1. User Question",
+        subtitle: "The request starts the flow.",
+        explain: "The user asks a question. In a normal chatbot, the model may answer only from what it already learned during training. In RAG, the question is used to search external knowledge first.",
+        example: "Example: 'What is RAG and why is it useful?'"
+      },
+      {
+        title: "2. Knowledge Base",
+        subtitle: "Documents are prepared in advance.",
+        explain: "A knowledge base contains documents, notes, PDFs, web pages, database records, or internal company content. These documents are usually split into smaller chunks so they are easier to search.",
+        example: "Example: course notes, company policies, product documentation, CRM data, support articles."
+      },
+      {
+        title: "3. Retrieval",
+        subtitle: "Search for the most relevant chunks.",
+        explain: "The system compares the user question with the knowledge chunks and selects the most relevant ones. This can be done with keyword search, vector search, semantic search, or hybrid search.",
+        example: "For a question about RAG, the retriever should select chunks about retrieval, context, grounding, and hallucination reduction."
+      },
+      {
+        title: "4. Prompt Augmentation",
+        subtitle: "Add retrieved knowledge to the prompt.",
+        explain: "The retrieved chunks are inserted into the prompt as context. This gives the model fresh, specific, and relevant information before it answers.",
+        example: "Prompt = question + retrieved context + instruction like 'answer only using the provided context'."
+      },
+      {
+        title: "5. Generation",
+        subtitle: "The AI writes the answer.",
+        explain: "The language model generates a response using both the user question and the retrieved context. The goal is not just a fluent answer, but a grounded and useful answer.",
+        example: "The answer explains RAG using the documents that were retrieved."
+      },
+      {
+        title: "6. Verification",
+        subtitle: "Check if the answer is supported.",
+        explain: "A strong RAG system should verify that the answer is based on retrieved content. If the answer uses unsupported claims, it may be hallucinating.",
+        example: "Good answer: cites or matches retrieved chunks. Bad answer: invents facts not found in the context."
+      }
+    ];
+
+    const knowledgeBase = [
+      {
+        title: "RAG Definition",
+        tags: ["rag", "definition", "ai"],
+        text: "RAG stands for Retrieval Augmented Generation. It combines information retrieval with text generation. The system first retrieves relevant knowledge, then uses it to generate a better answer."
+      },
+      {
+        title: "Knowledge Base",
+        tags: ["knowledge", "documents", "chunks"],
+        text: "A knowledge base stores useful information such as documents, notes, web pages, PDFs, or database records. In RAG, content is often split into smaller chunks for better retrieval."
+      },
+      {
+        title: "Retrieval Step",
+        tags: ["retrieval", "search", "semantic"],
+        text: "Retrieval means finding the most relevant pieces of information for the user's question. It can use keyword search, vector search, semantic search, or hybrid search."
+      },
+      {
+        title: "Prompt Augmentation",
+        tags: ["prompt", "context", "augmentation"],
+        text: "Prompt augmentation means adding retrieved context to the user's question before sending it to the model. This helps the model answer with more accurate and specific information."
+      },
+      {
+        title: "Why RAG Helps",
+        tags: ["useful", "accuracy", "hallucination"],
+        text: "RAG helps reduce hallucinations because the model is guided by retrieved facts instead of relying only on its training data. It is useful for fresh, private, or domain-specific information."
+      },
+      {
+        title: "Good RAG Practice",
+        tags: ["verification", "quality", "grounding"],
+        text: "A good RAG system checks whether the final answer is supported by the retrieved context. Retrieval quality, chunk quality, and prompt design strongly affect the answer quality."
+      }
+    ];
+
+    const stepsEl = document.getElementById("steps");
+    const detailEl = document.getElementById("detail");
+    const kbEl = document.getElementById("kb");
+
+    function renderSteps() {
+      stepsEl.innerHTML = ragSteps.map((step, index) => `
+        <button class="step-btn ${index === 0 ? 'active' : ''}" onclick="showStep(${index})">
+          <div class="number">${index + 1}</div>
+          <div>
+            <strong>${step.title.replace(/^\d+\.\s/, '')}</strong>
+            <span>${step.subtitle}</span>
+          </div>
+        </button>
+      `).join("");
+    }
+
+    function showStep(index) {
+      document.querySelectorAll('.step-btn').forEach((btn, i) => btn.classList.toggle('active', i === index));
+      const step = ragSteps[index];
+      detailEl.innerHTML = `
+        <div class="section-title">
+          <div>
+            <h2>${step.title}</h2>
+            <p>${step.subtitle}</p>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="detail-card">
+            <h3>What happens?</h3>
+            <p>${step.explain}</p>
+          </div>
+          <div class="detail-card">
+            <h3>Simple example</h3>
+            <p>${step.example}</p>
+            <ul>
+              <li><strong>Weak RAG:</strong> retrieves irrelevant documents.</li>
+              <li><strong>Strong RAG:</strong> retrieves precise context and forces the model to stay grounded.</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderKnowledgeBase() {
+      kbEl.innerHTML = knowledgeBase.map(doc => `
+        <div class="mini-doc">
+          <h4>${doc.title}</h4>
+          <div>${doc.tags.map(tag => `<span class="pill">${tag}</span>`).join('')}</div>
+          <p>${doc.text}</p>
+        </div>
+      `).join("");
+    }
+
+    function scoreDoc(question, doc) {
+      const q = question.toLowerCase();
+      let score = 0;
+      doc.tags.forEach(tag => {
+        if (q.includes(tag)) score += 3;
+      });
+      doc.text.toLowerCase().split(/\W+/).forEach(word => {
+        if (word.length > 4 && q.includes(word)) score += 1;
+      });
+      if (q.includes("what") && doc.tags.includes("definition")) score += 2;
+      if (q.includes("why") && doc.tags.includes("useful")) score += 3;
+      if (q.includes("hallucination") && doc.tags.includes("hallucination")) score += 4;
+      if (q.includes("prompt") && doc.tags.includes("prompt")) score += 4;
+      if (q.includes("retrieve") || q.includes("retrieval") || q.includes("search")) {
+        if (doc.tags.includes("retrieval")) score += 4;
+      }
+      return score;
+    }
+
+    function retrieve(question) {
+      return knowledgeBase
+        .map(doc => ({ ...doc, score: scoreDoc(question, doc) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function runRag() {
+      const question = document.getElementById('question').value.trim() || "What is RAG?";
+      const cards = document.querySelectorAll('.pipe-card');
+      const retrievedEl = document.getElementById('retrieved');
+      const answerEl = document.getElementById('answer');
+
+      retrievedEl.innerHTML = "Searching the mini knowledge base...";
+      answerEl.innerHTML = "Waiting for retrieved context...";
+      cards.forEach(card => card.classList.remove('running', 'done'));
+
+      for (let i = 0; i < cards.length; i++) {
+        cards.forEach(card => card.classList.remove('running'));
+        cards[i].classList.add('running');
+        await sleep(420);
+        cards[i].classList.remove('running');
+        cards[i].classList.add('done');
+      }
+
+      const docs = retrieve(question);
+      const retrievedHtml = docs.map((doc, i) => `
+        <div class="doc">
+          <strong>${i + 1}. ${doc.title}</strong> <span class="pill">score: ${doc.score}</span>
+          <p>${doc.text}</p>
+        </div>
+      `).join('');
+
+      retrievedEl.innerHTML = retrievedHtml;
+
+      const contextSummary = docs.map(doc => doc.text).join(' ');
+      answerEl.innerHTML = generateAnswer(question, docs, contextSummary);
+    }
+
+    function generateAnswer(question, docs, context) {
+      const titles = docs.map(d => d.title).join(', ');
+      return `
+        <p><strong>Question:</strong> ${question}</p>
+        <p><strong>Answer:</strong> RAG is a method where the system first retrieves relevant information from a knowledge base, then adds that information to the prompt before the AI model generates the final response.</p>
+        <p>This makes the answer better because the model is not relying only on memory. It receives useful context from documents like <span class="highlight">${titles}</span>. That usually improves accuracy, gives more specific answers, and reduces hallucinations.</p>
+        <p><strong>In one sentence:</strong> RAG = retrieve the right knowledge, inject it into the prompt, then generate a grounded answer.</p>
+      `;
+    }
+
+    renderSteps();
+    renderKnowledgeBase();
+    showStep(0);
+  </script>
+</body>
+</html>
