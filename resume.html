@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Moustapha Kane | Futuristic Resume</title>
+  <style>
+    :root {
+      --bg: #070b18;
+      --bg-soft: #0d1328;
+      --card: rgba(255, 255, 255, 0.07);
+      --card-strong: rgba(255, 255, 255, 0.11);
+      --line: rgba(255, 255, 255, 0.14);
+      --text: #eef5ff;
+      --muted: #9fb0c8;
+      --cyan: #38e8ff;
+      --blue: #6c7dff;
+      --violet: #b76cff;
+      --green: #5fffc3;
+      --gold: #ffd166;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(56, 232, 255, 0.22), transparent 28%),
+        radial-gradient(circle at 86% 8%, rgba(183, 108, 255, 0.18), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(108, 125, 255, 0.20), transparent 28%),
+        linear-gradient(135deg, #050815, #0a1022 48%, #050815);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: radial-gradient(circle at center, black, transparent 80%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .resume-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 36px auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(16px);
+      padding: 10px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: 0.25s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56,232,255,0.65);
+      box-shadow: 0 0 30px rgba(56,232,255,0.22);
+    }
+
+    .resume {
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 34px;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(28px);
+    }
+
+    .hero {
+      position: relative;
+      padding: 48px;
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 36px;
+      border-bottom: 1px solid var(--line);
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(56,232,255,0.18), transparent 66%);
+      top: -260px;
+      right: -160px;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border: 1px solid rgba(95,255,195,0.35);
+      color: var(--green);
+      background: rgba(95,255,195,0.08);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 18px;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 18px var(--green);
+    }
+
+    h1 {
+      font-size: clamp(42px, 7vw, 82px);
+      line-height: 0.92;
+      letter-spacing: -0.07em;
+      margin-bottom: 18px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .title {
+      font-size: 22px;
+      color: #dbe9ff;
+      font-weight: 750;
+      margin-bottom: 18px;
+    }
+
+    .summary {
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .contact-card {
+      position: relative;
+      z-index: 2;
+      align-self: start;
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: rgba(7,11,24,0.58);
+      box-shadow: 0 18px 55px rgba(0,0,0,0.28);
+    }
+
+    .contact-card h3,
+    .section h2 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--cyan);
+      margin-bottom: 16px;
+    }
+
+    .contact-list {
+      display: grid;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .contact-list span {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      background: rgba(7,11,24,0.72);
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 34px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 0.72fr 1.28fr;
+      gap: 0;
+    }
+
+    aside, main {
+      padding: 42px;
+    }
+
+    aside {
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.035);
+    }
+
+    .section {
+      margin-bottom: 34px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      padding: 9px 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      color: #d7e7ff;
+      font-size: 13px;
+      font-weight: 650;
+    }
+
+    .skill {
+      margin-bottom: 16px;
+    }
+
+    .skill-head {
+      display: flex;
+      justify-content: space-between;
+      color: #dbe9ff;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      width: var(--value);
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+      box-shadow: 0 0 18px rgba(56,232,255,0.45);
+    }
+
+    .timeline {
+      position: relative;
+      display: grid;
+      gap: 24px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 11px;
+      width: 1px;
+      background: linear-gradient(var(--cyan), transparent);
+    }
+
+    .item {
+      position: relative;
+      padding-left: 38px;
+    }
+
+    .item::before {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 5px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 24px rgba(56,232,255,0.75);
+    }
+
+    .item-card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      background: rgba(255,255,255,0.055);
+      transition: 0.25s ease;
+    }
+
+    .item-card:hover {
+      background: rgba(255,255,255,0.085);
+      transform: translateY(-2px);
+    }
+
+    .date {
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      margin-bottom: 8px;
+    }
+
+    .role {
+      font-size: 21px;
+      font-weight: 850;
+      margin-bottom: 4px;
+    }
+
+    .company {
+      color: var(--cyan);
+      font-weight: 750;
+      margin-bottom: 14px;
+    }
+
+    ul {
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.75;
+      font-size: 14px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .highlight {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(255,255,255,0.055);
+    }
+
+    .highlight strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .highlight p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .footer {
+      padding: 26px 42px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .scanline {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(to bottom, transparent, rgba(56,232,255,0.035), transparent);
+      height: 120px;
+      animation: scan 7s linear infinite;
+      z-index: 5;
+      opacity: 0.38;
+    }
+
+    @keyframes scan {
+      from { transform: translateY(-140px); }
+      to { transform: translateY(110vh); }
+    }
+
+    @media (max-width: 920px) {
+      .hero, .content {
+        grid-template-columns: 1fr;
+      }
+
+      aside {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .highlight-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 580px) {
+      .resume-shell {
+        width: calc(100% - 18px);
+        margin: 12px auto;
+      }
+
+      .hero, aside, main, .footer {
+        padding: 26px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #111;
+      }
+
+      body::before, .scanline, .top-actions {
+        display: none;
+      }
+
+      .resume-shell {
+        width: 100%;
+        margin: 0;
+      }
+
+      .resume {
+        box-shadow: none;
+        border-radius: 0;
+        background: #fff;
+        color: #111;
+      }
+
+      .hero, aside, main, .stat, .footer, .contact-card, .item-card, .highlight {
+        background: #fff !important;
+        color: #111 !important;
+      }
+
+      .summary, ul, .contact-list, .highlight p, .footer, .company, .date, .chip, .muted {
+        color: #333 !important;
+      }
+
+      .gradient-text {
+        color: #111;
+        background: none;
+      }
+
+      .resume, .hero, aside, .footer, .item-card, .highlight, .contact-card, .stat {
+        border-color: #ddd;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <div class="resume-shell">
+    <div class="top-actions">
+      <button onclick="toggleTheme()">Switch Mode</button>
+      <button onclick="window.print()">Download / Print PDF</button>
+    </div>
+
+    <article class="resume">
+      <section class="hero">
+        <div>
+          <div class="badge"><span class="pulse"></span> Available for Contract / Freelance Missions</div>
+          <h1>Moustapha <span class="gradient-text">Kane</span></h1>
+          <div class="title">Salesforce Technical Architect · Tech Lead · AI-Driven Digital Transformation</div>
+          <p class="summary">
+            Senior Salesforce Technical Architect and Tech Lead with 16+ years in IT and 9+ years across Salesforce Multi-Cloud ecosystems. I design scalable platforms, lead complex integrations, modernize legacy architectures, and bridge business, data and engineering teams. Strong focus on architecture governance, delivery excellence, API strategy, AI adoption and high-impact transformation programs.
+          </p>
+        </div>
+
+        <div class="contact-card">
+          <h3>Contact</h3>
+          <div class="contact-list">
+            <div><span>Location:</span> Paris / Île-de-France, France</div>
+            <div><span>Email:</span> mkane@simad-technology.com</div>
+            <div><span>LinkedIn:</span> Add your LinkedIn URL</div>
+            <div><span>Website:</span> Add portfolio / company website</div>
+            <div><span>Mode:</span> Freelance · Contract · Remote / Hybrid</div>
+            <div><span>Languages:</span> French · English</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat"><strong data-target="16">0</strong><span>Years in IT</span></div>
+        <div class="stat"><strong data-target="9">0</strong><span>Years Salesforce</span></div>
+        <div class="stat"><strong data-target="300">0</strong><span>K+ Users Impacted</span></div>
+        <div class="stat"><strong data-target="20">0</strong><span>Countries / Campuses</span></div>
+      </section>
+
+      <section class="content">
+        <aside>
+          <div class="section">
+            <h2>Core Expertise</h2>
+            <div class="chips">
+              <span class="chip">Salesforce Architecture</span>
+              <span class="chip">Sales Cloud</span>
+              <span class="chip">Service Cloud</span>
+              <span class="chip">Marketing Cloud</span>
+              <span class="chip">Experience Cloud</span>
+              <span class="chip">CPQ / Revenue Cloud</span>
+              <span class="chip">Apex</span>
+              <span class="chip">LWC</span>
+              <span class="chip">API Integration</span>
+              <span class="chip">Platform Events</span>
+              <span class="chip">OAuth / SSO</span>
+              <span class="chip">CI/CD</span>
+              <span class="chip">Data Governance</span>
+              <span class="chip">AI Product Strategy</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Capability Matrix</h2>
+            <div class="skill" style="--value: 96%">
+              <div class="skill-head"><span>Salesforce Solution Architecture</span><span>96%</span></div>
+              <div class="bar"><span></span></div>
+            </div>
+            <div class="skill" style="--value: 94%">
+              <div class="skill-head"><span>Technical Leadership</span><span>94%</span></div>
+              <div class="bar"><span></span></div>
+            </div>
+            <div class="skill" style="--value: 92%">
+              <div class="skill-head"><span>Integration & APIs</span><span>92%</span></div>
+              <div class="bar"><span></span></div>
+            </div>
+            <div class="skill" style="--value: 88%">
+              <div class="skill-head"><span>DevOps / CI-CD</span><span>88%</span></div>
+              <div class="bar"><span></span></div>
+            </div>
+            <div class="skill" style="--value: 82%">
+              <div class="skill-head"><span>AI & Automation Strategy</span><span>82%</span></div>
+              <div class="bar"><span></span></div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Tooling</h2>
+            <div class="chips">
+              <span class="chip">Salesforce DX</span>
+              <span class="chip">Git</span>
+              <span class="chip">Gearset</span>
+              <span class="chip">Copado</span>
+              <span class="chip">Jenkins</span>
+              <span class="chip">Jira</span>
+              <span class="chip">MuleSoft</span>
+              <span class="chip">REST / SOAP</span>
+              <span class="chip">Azure</span>
+              <span class="chip">n8n / Make</span>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Certifications</h2>
+            <ul>
+              <li>Salesforce certifications — add your official list here.</li>
+              <li>AI Product Management — in progress / active learning path.</li>
+              <li>Azure AI Fundamentals / GenAI credentials — optional if confirmed.</li>
+            </ul>
+          </div>
+        </aside>
+
+        <main>
+          <div class="section">
+            <h2>Strategic Positioning</h2>
+            <div class="highlight-grid">
+              <div class="highlight">
+                <strong>Architecture Modernization</strong>
+                <p>Audit, redesign and scale Salesforce landscapes with clean data models, secure integrations and maintainable delivery foundations.</p>
+              </div>
+              <div class="highlight">
+                <strong>Business / Tech Bridge</strong>
+                <p>Translate operational needs into robust technical solutions while challenging assumptions from data, product and admin teams.</p>
+              </div>
+              <div class="highlight">
+                <strong>Delivery Governance</strong>
+                <p>Define standards, review designs, mentor teams and secure delivery quality across complex Agile environments.</p>
+              </div>
+              <div class="highlight">
+                <strong>AI-Ready Transformation</strong>
+                <p>Combine Salesforce expertise with AI, automation and product thinking to build practical, monetizable digital solutions.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Professional Experience</h2>
+            <div class="timeline">
+              <div class="item">
+                <div class="item-card">
+                  <div class="date">Recent Missions</div>
+                  <div class="role">Salesforce Technical Architect / Tech Lead</div>
+                  <div class="company">Enterprise Salesforce Programs · Insurance / Education / International Contexts</div>
+                  <ul>
+                    <li>Designed and governed Salesforce multi-cloud architectures across Sales, Service, Marketing, Experience and integration layers.</li>
+                    <li>Led technical decisions around APIs, security, performance, data quality, DevOps and scalability.</li>
+                    <li>Acted as the bridge between stakeholders, administrators, data teams, developers and delivery leadership.</li>
+                    <li>Contributed to large-scale transformation programs involving multi-country environments and high-volume users.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="item">
+                <div class="item-card">
+                  <div class="date">May 2016 — Apr 2021</div>
+                  <div class="role">Salesforce Tech Lead</div>
+                  <div class="company">Cegid</div>
+                  <ul>
+                    <li>Designed and implemented modules for Cegid Treasury, including Cash Modeling and Cash Reporting capabilities.</li>
+                    <li>Automated business processes using Salesforce Flows, Process Builder and custom development patterns.</li>
+                    <li>Implemented SSO integration and exchange-rate automation through API-oriented architecture.</li>
+                    <li>Led development activities, improved user interfaces and produced technical documentation for long-term maintainability.</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="item">
+                <div class="item-card">
+                  <div class="date">Nov 2009 — Mar 2016</div>
+                  <div class="role">Project Manager · Lead Developer .NET Full-Stack</div>
+                  <div class="company">ACA</div>
+                  <ul>
+                    <li>Led the evolution of the DEX 10 EAI solution, including transport, validation, database mapping and trigger modules.</li>
+                    <li>Designed and delivered DEX-ICM, a backend supervision solution for enterprise data exchanges.</li>
+                    <li>Managed specifications, architecture, development, delivery tracking and Agile coordination.</li>
+                    <li>Built a strong engineering foundation later extended into Salesforce architecture and enterprise integration.</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>Selected Impact</h2>
+            <ul>
+              <li>Improved delivery velocity through DevOps, release governance and structured Salesforce delivery practices.</li>
+              <li>Supported scalable Salesforce solutions for complex organizations with international users and multi-team delivery models.</li>
+              <li>Strengthened integration reliability through API strategy, secure authentication, event-driven patterns and technical documentation.</li>
+              <li>Helped business and technical teams regain control over legacy Salesforce environments through audit, simplification and architecture redesign.</li>
+            </ul>
+          </div>
+        </main>
+      </section>
+
+      <footer class="footer">
+        <span>Target Roles: Salesforce Technical Architect · Solution Architect · Tech Lead · AI Transformation Consultant</span>
+        <span>Premium futuristic resume · HTML / CSS / JS single file</span>
+      </footer>
+    </article>
+  </div>
+
+  <script>
+    const counters = document.querySelectorAll('[data-target]');
+    const speed = 26;
+
+    function animateCounters() {
+      counters.forEach(counter => {
+        const target = Number(counter.dataset.target);
+        let current = 0;
+        const increment = Math.max(1, Math.ceil(target / speed));
+
+        const update = () => {
+          current += increment;
+          if (current >= target) {
+            counter.textContent = target === 300 ? '300' : target;
+            return;
+          }
+          counter.textContent = current;
+          requestAnimationFrame(update);
+        };
+        update();
+      });
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCounters();
+          observer.disconnect();
+        }
+      });
+    });
+
+    observer.observe(document.querySelector('.stats'));
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const currentBg = getComputedStyle(root).getPropertyValue('--bg').trim();
+      const light = currentBg === '#070b18';
+
+      if (light) {
+        root.style.setProperty('--bg', '#f4f7fb');
+        root.style.setProperty('--bg-soft', '#ffffff');
+        root.style.setProperty('--text', '#0c1222');
+        root.style.setProperty('--muted', '#4d5b70');
+        root.style.setProperty('--card', 'rgba(255, 255, 255, 0.76)');
+        document.body.style.background = 'linear-gradient(135deg, #eef5ff, #f8fbff)';
+      } else {
+        root.style.setProperty('--bg', '#070b18');
+        root.style.setProperty('--bg-soft', '#0d1328');
+        root.style.setProperty('--text', '#eef5ff');
+        root.style.setProperty('--muted', '#9fb0c8');
+        root.style.setProperty('--card', 'rgba(255, 255, 255, 0.07)');
+        document.body.style.background = '';
+      }
+    }
+
+    document.querySelectorAll('.item-card, .highlight, .contact-card').forEach(card => {
+      card.addEventListener('mousemove', event => {
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        card.style.background = `radial-gradient(circle at ${x}px ${y}px, rgba(56,232,255,0.14), rgba(255,255,255,0.055) 42%)`;
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.background = '';
+      });
+    });
+  </script>
+</body>
+</html>
